@@ -143,6 +143,29 @@ payment-service-d68b8d7b6-xd2pz      2/2     Running   0          5m
 
 ## 🔗 Access Applications
 
+### Istio Ingress (recommended on k3d)
+
+Access Grafana and Jaeger through the Istio ingress gateway with friendly hostnames.
+
+```bash
+# Set up ingress access (adds /etc/hosts entries and starts a port-forward if needed)
+./scripts/setup-ingress.sh
+
+# Open UIs
+open http://grafana.local:8080
+open http://jaeger.local:8080
+```
+
+Notes:
+- The script detects whether the Istio `istio-ingressgateway` NodePort is reachable on localhost. If not (common on k3d), it starts a background `kubectl port-forward` to local port 8080.
+- It adds `jaeger.local` and `grafana.local` to `/etc/hosts` (requires sudo on first run).
+- You can also curl directly using an explicit Host header:
+
+```bash
+curl -H 'Host: grafana.local' http://localhost:8080
+curl -H 'Host: jaeger.local'  http://localhost:8080
+```
+
 ### Port Forwarding
 
 **Important**: You need to run these commands in separate terminal windows to access the services locally.

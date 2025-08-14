@@ -12,6 +12,8 @@ istioctl install -y --set profile=demo
 kubectl apply -f k8s/istio/peer-auth-strict.yaml
 kubectl apply -f k8s/istio/destination-rules.yaml
 kubectl apply -f k8s/istio/kafka-mtls-policy.yaml
+kubectl apply -f k8s/istio/ingress-gateway.yaml
+kubectl apply -f k8s/istio/observability-destination-rules.yaml
 
 # Deploy Kafka (ZK + Kafka) for demo
 kubectl apply -f k8s/kafka/bitnami-kafka.yaml
