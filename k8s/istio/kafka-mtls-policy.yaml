@@ -1,0 +1,37 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: kafka-disable-mtls
+  namespace: data
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  mtls:
+    mode: DISABLE  # Disable mTLS for Kafka to allow plaintext communication
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: zookeeper-disable-mtls
+  namespace: data
+spec:
+  selector:
+    matchLabels:
+      app: zookeeper
+  mtls:
+    mode: DISABLE
+---
+# DestinationRule to allow Kafka to communicate with Zookeeper without mTLS
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: kafka-to-zookeeper
+  namespace: data
+spec:
+  host: zookeeper.data.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: DISABLE
+  exportTo:
+  - "."  # Only available within the data namespace
