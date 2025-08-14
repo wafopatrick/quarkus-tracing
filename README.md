@@ -67,17 +67,33 @@ graph TB
 ### Prerequisites
 
 - **Docker** and **kubectl** installed
-- **k3d** for local Kubernetes cluster
+- **k3d** for local Kubernetes cluster - [Installation Guide](https://k3d.io/)
 - **Istio CLI** (`istioctl`) - [Installation Guide](https://istio.io/latest/docs/setup/getting-started/#download)
 
 ### 1. Create k3d Cluster with Registry
 
 ```bash
-# Create cluster with local registry
+# Use the automated setup script
+./scripts/setup-k3d.sh
+```
+
+**What this does:**
+- ✅ Checks for k3d installation
+- ✅ Creates local Docker registry at `registry.localhost:5001`
+- ✅ Creates k3d cluster `quarkus-mesh` with 2 agents
+- ✅ Configures registry integration
+- ✅ Disables Traefik (we'll use Istio instead)
+- ✅ Waits for cluster to be ready
+
+**Manual alternative:**
+```bash
+# If you prefer manual setup
+k3d registry create registry.localhost --port 0.0.0.0:5001
 k3d cluster create quarkus-mesh \
   --agents 2 \
-  --registry-create k3d-registry.localhost:5001 \
-  --registry-use k3d-registry.localhost:5001
+  --registry-use registry.localhost:5001 \
+  --k3s-arg "--disable=traefik@server:0" \
+  --wait
 ```
 
 ### 2. Deploy Infrastructure
@@ -245,6 +261,7 @@ Order Service → orders topic → Payment Service
 ```
 ├── README.md
 ├── scripts/
+│   ├── setup-k3d.sh            # Create k3d cluster with registry
 │   ├── deploy-infra.sh          # Deploy infrastructure
 │   └── build-and-deploy.sh      # Build and deploy apps
 ├── inventory-service/           # Product inventory microservice
