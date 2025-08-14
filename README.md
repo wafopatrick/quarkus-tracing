@@ -145,15 +145,30 @@ payment-service-d68b8d7b6-xd2pz      2/2     Running   0          5m
 
 ### Port Forwarding
 
+**Important**: You need to run these commands in separate terminal windows to access the services locally.
+
 ```bash
-# Access services locally
+# Access services locally (run each in a separate terminal)
 kubectl port-forward -n apps svc/inventory-service 8080:8080
 kubectl port-forward -n apps svc/order-service 8081:8080  
 kubectl port-forward -n apps svc/payment-service 8082:8080
 
-# Access observability
-kubectl port-forward -n observability svc/jaeger 16686:16686
+# Access observability (run each in a separate terminal)
+kubectl port-forward -n observability svc/jaeger-query 16686:16686
 kubectl port-forward -n observability svc/grafana 3000:3000
+```
+
+**Quick access script:**
+```bash
+# Run all port forwards in background (single command)
+kubectl port-forward -n apps svc/inventory-service 8080:8080 &
+kubectl port-forward -n apps svc/order-service 8081:8080 &
+kubectl port-forward -n apps svc/payment-service 8082:8080 &
+kubectl port-forward -n observability svc/jaeger-query 16686:16686 &
+kubectl port-forward -n observability svc/grafana 3000:3000 &
+
+# To stop all port forwarding later:
+# pkill -f "kubectl port-forward"
 ```
 
 ### Service URLs
