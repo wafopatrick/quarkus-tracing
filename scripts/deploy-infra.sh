@@ -11,3 +11,6 @@ helm upgrade --install grafana grafana/grafana -f helm/infra-charts/grafana-valu
 helm upgrade --install loki grafana/loki-stack -f helm/infra-charts/loki-values.yaml --namespace logging --create-namespace
 helm upgrade --install jaeger jaegertracing/jaeger -f helm/infra-charts/jaeger-values.yaml --namespace observability
 helm upgrade --install kafka bitnami/kafka -f helm/infra-charts/kafka-values.yaml --namespace data --create-namespace
+
+# Apply Istio ingress routes for Grafana and Jaeger
+kubectl apply -f helm/infra-charts/istio-ingress.yaml

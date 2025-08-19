@@ -2,6 +2,7 @@
 set -euo pipefail
 
 CLUSTER_NAME=${CLUSTER_NAME:-quarkus-mesh}
+# Push via localhost; cluster will pull via registry.localhost
 REGISTRY_HOST=${REGISTRY_HOST:-localhost}
 REGISTRY_PORT=${REGISTRY_PORT:-5001}
 REG=${REGISTRY_HOST}:${REGISTRY_PORT}

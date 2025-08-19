@@ -1,3 +1,21 @@
+allInOne:
+  enabled: true
+  # all-in-one exposes query and collector in one pod
+  collector:
+    otlp:
+      enabled: true
+
+storage:
+  type: memory
+
+provisionDataStore:
+  cassandra: false
+
+agent:
+  enabled: false
+
 collector:
-  otlp:
-    enabled: true
+  enabled: false
+
+query:
+  enabled: false

@@ -1,3 +1,5 @@
+enableServiceLinks: false
+
 datasources:
   datasources.yaml:
     apiVersion: 1
@@ -13,5 +15,13 @@ datasources:
         url: http://jaeger-query.observability:16686
 
 env:
+  GF_TRACING_ENABLED: "false"
   GF_AUTH_ANONYMOUS_ENABLED: "true"
   GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+  # Override any service-provided Jaeger env vars that might trigger client init
+  JAEGER_AGENT_HOST: ""
+  JAEGER_AGENT_PORT: ""
+
+grafana.ini:
+  tracing:
+    enabled: false

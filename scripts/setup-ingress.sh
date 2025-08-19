@@ -21,7 +21,7 @@ fi
 
 # Fallback: port-forward the ingressgateway service locally
 if [[ -z "${REACHABLE_PORT}" ]]; then
-  REACHABLE_PORT=80
+  REACHABLE_PORT=8080
   REACHABLE_DESC="kubectl port-forward to ${REACHABLE_PORT}"
   echo "🔁 Starting background port-forward from local :${REACHABLE_PORT} to istio-ingressgateway:80"
   # Kill any existing forward on that port

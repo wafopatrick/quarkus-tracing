@@ -20,3 +20,10 @@ resources:
 env:
   quarkusOtelExporterOtlpEndpoint: http://jaeger-collector.observability:4317
   mpMessagingOutgoingOrdersOutBootstrapServers: kafka.data.svc.cluster.local:9092
+
+simulator:
+  enabled: true
+  schedule: "*/1 * * * *" # every minute
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid

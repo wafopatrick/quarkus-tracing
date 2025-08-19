@@ -1,0 +1,46 @@
+{{- if .Values.simulator.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Chart.Name }}-simulator
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: {{ .Values.simulator.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.simulator.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.simulator.failedJobsHistoryLimit }}
+  concurrencyPolicy: {{ .Values.simulator.concurrencyPolicy }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: {{ .Chart.Name }}-simulator
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: simulate
+              image: curlimages/curl:8.8.0
+              imagePullPolicy: IfNotPresent
+              command:
+                - sh
+                - -ceu
+                - |
+                  set -o pipefail
+                  random_sku=$(printf "%s\n" ABC-1 XYZ-9 FOO-7 | shuf -n1)
+                  qty=$(( (RANDOM % 7) + 1 ))
+                  echo "Creating order sku=${random_sku} qty=${qty}"
+                  resp=$(curl -sS -X POST -H 'Content-Type: application/json' \
+                    --retry 3 --retry-connrefused --max-time 5 \
+                    -d "{\"sku\":\"${random_sku}\",\"quantity\":${qty}}" \
+                    http://order-service.apps.svc.cluster.local:8080/orders)
+                  echo "$resp"
+                  order_id=$(printf "%s" "$resp" | sed -n 's/.*"id":"\([^"]*\)".*/\1/p')
+                  if [ -z "$order_id" ]; then echo "Failed to parse order id"; exit 1; fi
+                  echo "Created order id=${order_id}"
+                  echo "Fetching order id=${order_id}"
+                  curl -sS --retry 3 --retry-connrefused --max-time 5 \
+                    http://order-service.apps.svc.cluster.local:8080/orders/${order_id}
+              env:
+                - name: JAEGER_PROPAGATION
+                  value: w3c
+{{- end }}

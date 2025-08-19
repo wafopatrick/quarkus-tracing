@@ -1,0 +1,54 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: ingress-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - grafana.local
+        - jaeger.local
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: grafana-ingress
+  namespace: observability
+spec:
+  hosts:
+    - grafana.local
+  gateways:
+    - istio-system/ingress-gateway
+  http:
+    - route:
+        - destination:
+            host: grafana.observability.svc.cluster.local
+            port:
+              number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: jaeger-ingress
+  namespace: observability
+spec:
+  hosts:
+    - jaeger.local
+  gateways:
+    - istio-system/ingress-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: jaeger-query.observability.svc.cluster.local
+            port:
+              number: 16686
