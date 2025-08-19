@@ -31,10 +31,10 @@ echo "Cleaning and building payment-service..."
   -Dquarkus.container-image.insecure=true \
   clean build -x test
 
-# Apply app manifests
-kubectl apply -f k8s/apps/inventory-service.yaml
-kubectl apply -f k8s/apps/order-service.yaml
-kubectl apply -f k8s/apps/payment-service.yaml
+# Deploy apps using Helm
+helm upgrade --install inventory-service helm/inventory-service --namespace apps --create-namespace
+helm upgrade --install order-service helm/order-service --namespace apps
+helm upgrade --install payment-service helm/payment-service --namespace apps
 
 echo "Wait for rollouts..."
 kubectl -n apps rollout status deploy/inventory-service
