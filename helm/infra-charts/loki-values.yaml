@@ -4,15 +4,13 @@ loki:
     http_listen_port: 3100
     grpc_listen_port: 9096
   common:
-    instance_addr: 127.0.0.1
-    path_prefix: /loki
+    path_prefix: /tmp/loki
     storage:
       filesystem:
-        chunks_directory: /loki/chunks
-        rules_directory: /loki/rules
+        chunks_directory: /tmp/loki/chunks
+        rules_directory: /tmp/loki/rules
     replication_factor: 1
     ring:
-      instance_addr: 127.0.0.1
       kvstore:
         store: inmemory
   schema_config:
@@ -27,6 +25,7 @@ loki:
   ruler:
     alertmanager_url: http://localhost:9093
   limits_config:
+    volume_enabled: true
     max_streams_per_user: 2000
 
 promtail:
@@ -36,9 +35,10 @@ promtail:
       http_listen_port: 9080
       grpc_listen_port: 0
     positions:
-      filename: /tmp/positions.yaml
+      filename: /run/promtail/positions.yaml
     clients:
-      - url: dns:///loki.logging:9096
+      # Use ClusterIP service FQDN for reliability
+      - url: http://loki.logging.svc.cluster.local:3100/loki/api/v1/push
     scrape_configs:
       - job_name: kubernetes-pods
         pipeline_stages:
