@@ -42,3 +42,17 @@ options:
 EOF
 
 echo "Cluster created: ${CLUSTER_NAME}"
+
+# Create namespaces
+kubectl create namespace apps
+kubectl create namespace observability
+kubectl create namespace data
+kubectl create namespace logging
+
+# Install Istio
+helm repo add istio https://istio-release.storage.googleapis.com/charts
+helm repo update
+kubectl create namespace istio-system
+helm install istio-base istio/base -n istio-system
+helm install istiod istio/istiod -n istio-system --wait
+helm install istio-ingressgateway istio/gateway -n istio-system --wait
