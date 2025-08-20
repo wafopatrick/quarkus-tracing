@@ -1,0 +1,40 @@
+deploymentMode: SingleBinary
+loki:
+  image:
+    registry: docker.io
+    repository: grafana/loki
+    tag: 3.5.3
+    pullPolicy: IfNotPresent
+  auth_enabled: false
+  # Use structuredConfig to provide a minimal v3 filesystem setup
+  structuredConfig:
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9095
+    common:
+      path_prefix: /data/loki
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+      storage:
+        filesystem:
+          chunks_directory: /data/loki/chunks
+          rules_directory: /data/loki/rules
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+    ruler:
+      storage:
+        type: local
+        local:
+          directory: /data/loki/rules
+    limits_config:
+      volume_enabled: true
+      max_streams_per_user: 2000
