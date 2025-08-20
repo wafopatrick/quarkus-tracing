@@ -104,11 +104,11 @@ k3d cluster create quarkus-mesh \
 ```
 
 **What this does:**
-- ✅ Creates namespaces with Istio injection
-- ✅ Installs Istio with demo profile
-- ✅ Configures mTLS policies (strict for apps, disabled for Kafka)
-- ✅ Deploys Kafka + Zookeeper with Istio sidecars
-- ✅ Sets up Jaeger, Grafana, and Loki
+- ✅ Creates namespaces (apps, data, logging, observability)
+- ✅ Installs Istio (base, istiod, ingressgateway)
+- ✅ Deploys Kafka + Zookeeper
+- ✅ Installs Jaeger (all-in-one), Grafana (12.1.1), Loki (3.5.3 SingleBinary) and Promtail
+- ✅ Sets up Istio ingress routes for `grafana.local` and `jaeger.local`
 
 ### 3. Build and Deploy Applications
 
@@ -120,8 +120,9 @@ k3d cluster create quarkus-mesh \
 **What this does:**
 - ✅ Cleans and builds Quarkus applications
 - ✅ Pushes images to local k3d registry
-- ✅ Deploys services to Kubernetes with Istio sidecars
+- ✅ Deploys services via Helm
 - ✅ Waits for all rollouts to complete
+- ✅ Also deploys a traffic simulator CronJob (`order-service-simulator`) that periodically creates and fetches orders, so you can see traces in Jaeger and logs in Loki
 
 ### 4. Verify Deployment
 
@@ -201,8 +202,8 @@ kubectl port-forward -n observability svc/grafana 3000:3000 &
 | Inventory Service | http://localhost:8080 | Product inventory API |
 | Order Service | http://localhost:8081 | Order processing API |  
 | Payment Service | http://localhost:8082 | Payment processing API |
-| Jaeger UI | http://localhost:16686 | Distributed tracing |
-| Grafana | http://localhost:3000 | Metrics dashboards |
+| Jaeger UI | http://jaeger.local:8080 (via Istio) | Distributed tracing |
+| Grafana | http://grafana.local:8080 (via Istio) | Dashboards & logs |
 
 ### Health Checks
 
@@ -284,10 +285,10 @@ Order Service → orders topic → Payment Service
 - Cross-service trace correlation
 - Kafka message tracing
 
-**Logging (Loki):**
-- Structured JSON logs from all services  
-- Centralized log aggregation
-- Grafana integration for log exploration
+**Logging (Loki + Promtail):**
+- Loki 3.5.3 SingleBinary (filesystem storage for demo) in `logging` namespace
+- Promtail DaemonSet ships Kubernetes pod logs to Loki
+- Grafana Explore for logs with volume panel enabled
 
 **Metrics (Prometheus/Grafana):**
 - Application metrics via Micrometer
@@ -299,23 +300,22 @@ Order Service → orders topic → Payment Service
 ```
 ├── README.md
 ├── scripts/
-│   ├── setup-k3d.sh            # Create k3d cluster with registry
-│   ├── deploy-infra.sh          # Deploy infrastructure
-│   └── build-and-deploy.sh      # Build and deploy apps
-├── inventory-service/           # Product inventory microservice
-├── order-service/              # Order processing microservice  
-├── payment-service/            # Payment processing microservice
-└── k8s/
-    ├── namespaces.yaml         # Kubernetes namespaces
-    ├── apps/                   # Application deployments
-    ├── istio/                  # Istio configuration
-    │   ├── peer-auth-strict.yaml
-    │   ├── destination-rules.yaml
-    │   └── kafka-mtls-policy.yaml
-    ├── kafka/                  # Kafka deployment
-    ├── jaeger/                 # Jaeger tracing
-    ├── loki/                   # Loki logging
-    └── grafana/                # Grafana dashboards
+│   ├── setup-k3d.sh           # Create k3d cluster with registry and Istio
+│   ├── deploy-infra.sh         # Deploy Grafana, Loki (manifests), Promtail, Jaeger, Kafka
+│   └── build-and-deploy.sh     # Build and deploy apps via Helm
+├── helm/
+│   ├── infra-charts/
+│   │   ├── grafana-values.yaml          # Grafana 12.1.1 datasource and settings
+│   │   ├── loki-manifests.yaml          # Loki 3.5.3 SingleBinary (applied by script)
+│   │   ├── promtail-values.yaml         # Promtail config (pushes to loki.logging.svc)
+│   │   ├── istio-ingress.yaml           # Istio Gateway/VirtualServices for Grafana/Jaeger
+│   │   └── jaeger-values.yaml           # Jaeger all-in-one config
+│   ├── inventory-service/               # Helm chart for inventory-service
+│   ├── order-service/                   # Helm chart for order-service (includes simulator CronJob)
+│   └── payment-service/                 # Helm chart for payment-service
+├── inventory-service/                   # Quarkus project
+├── order-service/                       # Quarkus project
+└── payment-service/                     # Quarkus project
 ```
 
 ## 🐛 Troubleshooting
