@@ -21,6 +21,8 @@ env:
   # Override any service-provided Jaeger env vars that might trigger client init
   JAEGER_AGENT_HOST: ""
   JAEGER_AGENT_PORT: ""
+  # Install legacy Loki Explore app to satisfy Drilldown->Logs route
+  GF_INSTALL_PLUGINS: grafana-lokiexplore-app
 
 grafana.ini:
   tracing:
