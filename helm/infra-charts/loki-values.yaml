@@ -50,6 +50,14 @@ promtail:
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
+          # Drop logs from the order-service simulator cronjob pods
+          - action: drop
+            source_labels: ["__meta_kubernetes_pod_label_app"]
+            regex: order-service-simulator
+          # Also drop when the job name indicates the simulator job
+          - action: drop
+            source_labels: ["__meta_kubernetes_pod_label_job_name"]
+            regex: order-service-simulator-.*
           - source_labels: ["__meta_kubernetes_pod_node_name"]
             target_label: "__host__"
           - action: replace

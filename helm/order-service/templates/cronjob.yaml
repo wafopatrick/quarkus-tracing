@@ -15,6 +15,8 @@ spec:
         metadata:
           labels:
             app: {{ .Chart.Name }}-simulator
+          annotations:
+            sidecar.istio.io/inject: "false"
         spec:
           restartPolicy: OnFailure
           containers:
@@ -40,7 +42,4 @@ spec:
                   echo "Fetching order id=${order_id}"
                   curl -sS --retry 3 --retry-connrefused --max-time 5 \
                     http://order-service.apps.svc.cluster.local:8080/orders/${order_id}
-              env:
-                - name: JAEGER_PROPAGATION
-                  value: w3c
 {{- end }}
