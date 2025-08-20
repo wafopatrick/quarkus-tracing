@@ -1,5 +1,11 @@
 enableServiceLinks: false
 
+image:
+  # Use chart's default registry (docker.io) and avoid duplicating it
+  repository: grafana/grafana
+  tag: "12.1.1"
+  pullPolicy: IfNotPresent
+
 datasources:
   datasources.yaml:
     apiVersion: 1

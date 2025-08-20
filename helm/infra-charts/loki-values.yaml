@@ -1,36 +1,51 @@
 loki:
+  enabled: true
+  isDefault: true
   image:
     repository: grafana/loki
-    tag: 2.9.3
+    tag: 3.5.3
     pullPolicy: IfNotPresent
   auth_enabled: false
-  server:
-    http_listen_port: 3100
-    grpc_listen_port: 9096
-  common:
-    path_prefix: /tmp/loki
-    storage:
-      filesystem:
-        chunks_directory: /tmp/loki/chunks
-        rules_directory: /tmp/loki/rules
-    replication_factor: 1
-    ring:
-      kvstore:
-        store: inmemory
-  schema_config:
-    configs:
-    - from: 2020-10-24
-      store: boltdb-shipper
-      object_store: filesystem
-      schema: v13
-      index:
-        prefix: index_
-        period: 24h
-  ruler:
-    alertmanager_url: http://localhost:9093
-  limits_config:
-    volume_enabled: true
-    max_streams_per_user: 2000
+  # Provide a v3-compatible config explicitly
+  structuredConfig:
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 9095
+    common:
+      instance_addr: 0.0.0.0
+      path_prefix: /data/loki
+      storage:
+        filesystem:
+          chunks_directory: /data/loki/chunks
+          rules_directory: /data/loki/rules
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+    analytics:
+      reporting_enabled: false
+    schema_config:
+      configs:
+      - from: 2020-10-24
+        store: boltdb-shipper
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+    ruler:
+      storage:
+        type: local
+        local:
+          directory: /data/loki/rules
+    ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+    limits_config:
+      volume_enabled: true
+      max_streams_per_user: 2000
 
 promtail:
   enabled: true
