@@ -1,0 +1,47 @@
+promtail:
+  enabled: true
+  config:
+    server:
+      http_listen_port: 9080
+      grpc_listen_port: 0
+    positions:
+      filename: /run/promtail/positions.yaml
+    clients:
+      - url: http://loki.logging.svc.cluster.local:3100/loki/api/v1/push
+    scrape_configs:
+      - job_name: kubernetes-pods
+        pipeline_stages:
+          - json:
+              expressions:
+                traceId: traceId
+                spanId: spanId
+                service: service
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - action: drop
+            source_labels: ["__meta_kubernetes_pod_label_app"]
+            regex: order-service-simulator
+          - action: drop
+            source_labels: ["__meta_kubernetes_pod_label_job_name"]
+            regex: order-service-simulator-.*
+          - source_labels: ["__meta_kubernetes_pod_node_name"]
+            target_label: "__host__"
+          - action: replace
+            source_labels: ["__meta_kubernetes_pod_uid"]
+            target_label: "pod_uid"
+          - action: replace
+            source_labels: ["__meta_kubernetes_pod_name"]
+            target_label: "pod"
+          - action: replace
+            source_labels: ["__meta_kubernetes_namespace"]
+            target_label: "namespace"
+          - action: replace
+            source_labels: ["__meta_kubernetes_pod_container_name"]
+            target_label: "container"
+          - action: replace
+            replacement: "/var/log/pods/*$1/*.log"
+            separator: /
+            regex: (.*)
+            source_labels: ["pod_uid"]
+            target_label: "__path__"
